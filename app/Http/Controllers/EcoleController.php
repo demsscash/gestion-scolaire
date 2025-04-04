@@ -2,216 +2,91 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Eleve;
+use App\Models\Ecole;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
-class EleveController extends Controller
+class EcoleController extends Controller
 {
     /**
-     * Afficher une liste de la ressource.
+     * Display a listing of the resource.
      */
     public function index()
     {
-        $eleves = Eleve::orderBy('nom')->orderBy('prenom')->paginate(15);
-
-        return response()->json($eleves);
+        $ecoles = Ecole::all();
+        return response()->json($ecoles);
     }
 
     /**
-     * Stocker une nouvelle ressource dans le stockage.
+     * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'matricule' => 'required|string|unique:eleves,matricule',
-            'nom' => 'required|string|max:100',
-            'prenom' => 'required|string|max:100',
-            'date_naissance' => 'required|date',
-            'lieu_naissance' => 'nullable|string|max:100',
-            'sexe' => 'required|in:M,F',
-            'adresse' => 'nullable|string',
+            'nom' => 'required|string|max:255',
+            'adresse' => 'required|string',
             'telephone' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:100',
-            'nom_parent' => 'required|string|max:100',
-            'contact_parent' => 'required|string|max:100',
-            'photo' => 'nullable|image|max:2048', // 2MB max
-            'date_inscription' => 'required|date',
+            'email' => 'nullable|email|max:255',
+            'site_web' => 'nullable|url|max:255',
+            'logo' => 'nullable|string|max:255',
+            'slogan' => 'nullable|string|max:255',
+            'directeur' => 'nullable|string|max:255',
+            'date_creation' => 'nullable|date',
         ]);
 
-        // Traitement de la photo
-        if ($request->hasFile('photo')) {
-            $photoPath = $request->file('photo')->store('photos_eleves', 'public');
-            $validated['photo'] = $photoPath;
-        }
-
-        $eleve = Eleve::create($validated);
+        $ecole = Ecole::create($validated);
 
         return response()->json([
-            'message' => 'Élève créé avec succès',
-            'eleve' => $eleve
+            'message' => 'École créée avec succès',
+            'ecole' => $ecole
         ], 201);
     }
 
     /**
-     * Afficher la ressource spécifiée.
+     * Display the specified resource.
      */
     public function show(string $id)
     {
-        $eleve = Eleve::with(['inscriptions.classe.niveau', 'inscriptions.anneeScolaire'])
-            ->findOrFail($id);
-
-        return response()->json($eleve);
+        $ecole = Ecole::findOrFail($id);
+        return response()->json($ecole);
     }
 
     /**
-     * Mettre à jour la ressource spécifiée dans le stockage.
+     * Update the specified resource in storage.
      */
     public function update(Request $request, string $id)
     {
-        $eleve = Eleve::findOrFail($id);
+        $ecole = Ecole::findOrFail($id);
 
         $validated = $request->validate([
-            'matricule' => 'sometimes|required|string|unique:eleves,matricule,' . $id,
-            'nom' => 'sometimes|required|string|max:100',
-            'prenom' => 'sometimes|required|string|max:100',
-            'date_naissance' => 'sometimes|required|date',
-            'lieu_naissance' => 'nullable|string|max:100',
-            'sexe' => 'sometimes|required|in:M,F',
-            'adresse' => 'nullable|string',
+            'nom' => 'sometimes|required|string|max:255',
+            'adresse' => 'sometimes|required|string',
             'telephone' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:100',
-            'nom_parent' => 'sometimes|required|string|max:100',
-            'contact_parent' => 'sometimes|required|string|max:100',
-            'photo' => 'nullable|image|max:2048', // 2MB max
-            'date_inscription' => 'sometimes|required|date',
+            'email' => 'nullable|email|max:255',
+            'site_web' => 'nullable|url|max:255',
+            'logo' => 'nullable|string|max:255',
+            'slogan' => 'nullable|string|max:255',
+            'directeur' => 'nullable|string|max:255',
+            'date_creation' => 'nullable|date',
         ]);
 
-        // Traitement de la photo
-        if ($request->hasFile('photo')) {
-            // Supprimer l'ancienne photo si elle existe
-            if ($eleve->photo && Storage::disk('public')->exists($eleve->photo)) {
-                Storage::disk('public')->delete($eleve->photo);
-            }
-
-            $photoPath = $request->file('photo')->store('photos_eleves', 'public');
-            $validated['photo'] = $photoPath;
-        }
-
-        $eleve->update($validated);
+        $ecole->update($validated);
 
         return response()->json([
-            'message' => 'Élève mis à jour avec succès',
-            'eleve' => $eleve
+            'message' => 'École mise à jour avec succès',
+            'ecole' => $ecole
         ]);
     }
 
     /**
-     * Supprimer la ressource spécifiée du stockage.
+     * Remove the specified resource from storage.
      */
     public function destroy(string $id)
     {
-        $eleve = Eleve::findOrFail($id);
-
-        // Vérifier si l'élève a des inscriptions
-        if ($eleve->inscriptions()->count() > 0) {
-            return response()->json([
-                'message' => 'Impossible de supprimer cet élève car il a des inscriptions associées'
-            ], 422);
-        }
-
-        // Supprimer la photo si elle existe
-        if ($eleve->photo && Storage::disk('public')->exists($eleve->photo)) {
-            Storage::disk('public')->delete($eleve->photo);
-        }
-
-        $eleve->delete();
+        $ecole = Ecole::findOrFail($id);
+        $ecole->delete();
 
         return response()->json([
-            'message' => 'Élève supprimé avec succès'
+            'message' => 'École supprimée avec succès'
         ]);
-    }
-
-    /**
-     * Rechercher des élèves.
-     */
-    public function search(Request $request)
-    {
-        $query = Eleve::query();
-
-        // Recherche par matricule
-        if ($request->has('matricule')) {
-            $query->where('matricule', 'like', '%' . $request->matricule . '%');
-        }
-
-        // Recherche par nom
-        if ($request->has('nom')) {
-            $query->where('nom', 'like', '%' . $request->nom . '%');
-        }
-
-        // Recherche par prénom
-        if ($request->has('prenom')) {
-            $query->where('prenom', 'like', '%' . $request->prenom . '%');
-        }
-
-        // Recherche par date de naissance
-        if ($request->has('date_naissance')) {
-            $query->whereDate('date_naissance', $request->date_naissance);
-        }
-
-        $eleves = $query->orderBy('nom')->orderBy('prenom')->paginate(15);
-
-        return response()->json($eleves);
-    }
-
-    /**
-     * Récupérer la photo d'un élève.
-     */
-    public function getPhoto(string $id)
-    {
-        $eleve = Eleve::findOrFail($id);
-
-        if (!$eleve->photo || !Storage::disk('public')->exists($eleve->photo)) {
-            return response()->json([
-                'message' => 'Aucune photo trouvée pour cet élève'
-            ], 404);
-        }
-
-        return response()->file(Storage::disk('public')->path($eleve->photo));
-    }
-
-    /**
-     * Obtenir tous les élèves d'une classe spécifique.
-     */
-    public function getByClasse(string $classeId)
-    {
-        $eleves = Eleve::whereHas('inscriptions', function ($query) use ($classeId) {
-            $query->where('classe_id', $classeId)
-                ->where('statut', 'actif');
-        })
-            ->orderBy('nom')
-            ->orderBy('prenom')
-            ->get();
-
-        return response()->json($eleves);
-    }
-
-    /**
-     * Obtenir tous les élèves inscrits pour une année scolaire spécifique.
-     */
-    public function getByAnneeScolaire(string $anneeScolaireId)
-    {
-        $eleves = Eleve::whereHas('inscriptions', function ($query) use ($anneeScolaireId) {
-            $query->where('annee_scolaire_id', $anneeScolaireId);
-        })
-            ->with(['inscriptions' => function ($query) use ($anneeScolaireId) {
-                $query->where('annee_scolaire_id', $anneeScolaireId)
-                    ->with('classe');
-            }])
-            ->orderBy('nom')
-            ->orderBy('prenom')
-            ->get();
-
-        return response()->json($eleves);
     }
 }
