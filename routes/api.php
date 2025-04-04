@@ -33,6 +33,9 @@ use Illuminate\Support\Facades\Route;
 // Routes d'authentification
 Route::post('/login', [UtilisateurController::class, 'login']);
 Route::post('/logout', [UtilisateurController::class, 'logout'])->middleware('auth:sanctum');
+Route::get('/test', function () {
+    return response()->json(['status' => 'ok']);
+});
 
 // Routes protégées par l'authentification
 Route::middleware('auth:sanctum')->group(function () {
@@ -100,4 +103,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('factures', FactureController::class);
     Route::get('/factures/inscription/{inscriptionId}', [FactureController::class, 'getByInscription']);
     Route::get('/factures/{id}/pdf', [FactureController::class, 'generatePdf']);
+});
+
+Route::get('/test', function () {
+    return response()->json(['status' => 'ok']);
 });

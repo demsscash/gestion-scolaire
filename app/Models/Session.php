@@ -16,8 +16,8 @@ class Session extends Model
      *
      * @var string
      */
+    // dans app/Models/Session.php
     protected $table = 'academic_periods';
-
     /**
      * Les attributs qui sont mass assignable.
      *

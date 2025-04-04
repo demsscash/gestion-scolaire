@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('academic_sessions', function (Blueprint $table) {
+        Schema::create('academic_periods', function (Blueprint $table) {
             $table->id();
             $table->foreignId('annee_scolaire_id')->constrained()->onDelete('cascade');
             $table->string('libelle');
