@@ -1,0 +1,501 @@
+openapi: 3.0.0
+info:
+  title: API de Gestion Scolaire
+  description: API pour la gestion des écoles, élèves, classes, inscriptions, notes, bulletins et paiements
+  version: 1.0.0
+  
+servers:
+  - url: /api
+    description: Serveur de l'API
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  
+  schemas:
+    Utilisateur:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        nom_utilisateur:
+          type: string
+        nom:
+          type: string
+        prenom:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [administrateur]
+        dernier_login:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    
+    Eleve:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        matricule:
+          type: string
+        nom:
+          type: string
+        prenom:
+          type: string
+        date_naissance:
+          type: string
+          format: date
+        lieu_naissance:
+          type: string
+        sexe:
+          type: string
+          enum: [M, F]
+        adresse:
+          type: string
+        telephone:
+          type: string
+        email:
+          type: string
+          format: email
+        nom_parent:
+          type: string
+        contact_parent:
+          type: string
+        photo:
+          type: string
+        date_inscription:
+          type: string
+          format: date
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    
+    Niveau:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        code:
+          type: string
+        libelle:
+          type: string
+        description:
+          type: string
+        frais_scolarite:
+          type: number
+          format: float
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    
+    AnneeScolaire:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        libelle:
+          type: string
+        date_debut:
+          type: string
+          format: date
+        date_fin:
+          type: string
+          format: date
+        est_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    
+    Classe:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        niveau_id:
+          type: integer
+          format: int64
+        annee_scolaire_id:
+          type: integer
+          format: int64
+        nom:
+          type: string
+        capacite:
+          type: integer
+        titulaire:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+          
+    Inscription:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        eleve_id:
+          type: integer
+          format: int64
+        classe_id:
+          type: integer
+          format: int64
+        annee_scolaire_id:
+          type: integer
+          format: int64
+        date_inscription:
+          type: string
+          format: date
+        statut:
+          type: string
+          enum: [actif, transféré, retiré]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+          
+    Session:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        annee_scolaire_id:
+          type: integer
+          format: int64
+        libelle:
+          type: string
+        date_debut:
+          type: string
+          format: date
+        date_fin:
+          type: string
+          format: date
+        est_cloturee:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Matiere:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        code:
+          type: string
+        libelle:
+          type: string
+        description:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+          
+    MatiereNiveau:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        matiere_id:
+          type: integer
+          format: int64
+        niveau_id:
+          type: integer
+          format: int64
+        coefficient:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+          
+    Note:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        inscription_id:
+          type: integer
+          format: int64
+        matiere_niveau_id:
+          type: integer
+          format: int64
+        session_id:
+          type: integer
+          format: int64
+        valeur:
+          type: number
+          format: float
+        appreciation:
+          type: string
+        date_saisie:
+          type: string
+          format: date
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+          
+    Bulletin:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        inscription_id:
+          type: integer
+          format: int64
+        session_id:
+          type: integer
+          format: int64
+        moyenne_generale:
+          type: number
+          format: float
+        rang:
+          type: integer
+        appreciation_generale:
+          type: string
+        date_edition:
+          type: string
+          format: date
+        decision:
+          type: string
+          enum: [passage, redoublement, en_attente]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+          
+    Facture:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        inscription_id:
+          type: integer
+          format: int64
+        numero:
+          type: string
+        date_emission:
+          type: string
+          format: date
+        montant_total:
+          type: number
+          format: float
+        statut:
+          type: string
+          enum: [payée, partiellement_payée, impayée]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+          
+    Paiement:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        inscription_id:
+          type: integer
+          format: int64
+        facture_id:
+          type: integer
+          format: int64
+        montant:
+          type: number
+          format: float
+        date_paiement:
+          type: string
+          format: date
+        mode_paiement:
+          type: string
+          enum: [espèces, chèque, virement]
+        reference:
+          type: string
+        mois_concerne:
+          type: string
+        description:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+          
+    Ecole:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        nom:
+          type: string
+        adresse:
+          type: string
+        telephone:
+          type: string
+        email:
+          type: string
+          format: email
+        site_web:
+          type: string
+        logo:
+          type: string
+        slogan:
+          type: string
+        directeur:
+          type: string
+        date_creation:
+          type: string
+          format: date
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+          
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+
+security:
+  - bearerAuth: []
+
+paths:
+  /login:
+    post:
+      security: []
+      tags:
+        - Authentification
+      summary: Connexion utilisateur
+      description: Connecte un utilisateur et génère un token d'API
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - nom_utilisateur
+                - mot_de_passe
+              properties:
+                nom_utilisateur:
+                  type: string
+                mot_de_passe:
+                  type: string
+                device_name:
+                  type: string
+      responses:
+        '200':
+          description: Connexion réussie
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  utilisateur:
+                    $ref: '#/components/schemas/Utilisateur'
+                  token:
+                    type: string
+        '401':
+          description: Identifiants invalides
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /logout:
+    post:
+      tags:
+        - Authentification
+      summary: Déconnexion utilisateur
+      description: Révoque le token d'API actuel
+      responses:
+        '200':
+          description: Déconnexion réussie
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  
+  /user:
+    get:
+      tags:
+        - Authentification
+      summary: Utilisateur courant
+      description: Récupère les informations de l'utilisateur actuellement connecté
+      responses:
+        '200':
+          description: Utilisateur récupéré avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Utilisateur'
+
+  # Autres routes...
+  # Par souci de concision, toutes les routes ne sont pas définies ici.
+  # Un fichier OpenAPI complet inclurait toutes les routes API disponibles.

@@ -55,4 +55,14 @@ class Utilisateur extends Authenticatable
     {
         return "{$this->prenom} {$this->nom}";
     }
+
+    /**
+     * Redéfinir le nom de l'attribut du mot de passe pour l'authentification.
+     *
+     * @return string
+     */
+    public function getAuthPassword()
+    {
+        return $this->mot_de_passe;
+    }
 }

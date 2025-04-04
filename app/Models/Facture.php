@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Facture extends Model
 {
@@ -39,6 +40,14 @@ class Facture extends Model
     public function inscription(): BelongsTo
     {
         return $this->belongsTo(Inscription::class);
+    }
+
+    /**
+     * Obtenir les paiements associés à cette facture.
+     */
+    public function paiements(): HasMany
+    {
+        return $this->hasMany(Paiement::class);
     }
 
     /**

@@ -3,10 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Utilisateur;
+use App\Http\Requests\UtilisateurRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
+
+
 
 class UtilisateurController extends Controller
 {
@@ -68,16 +72,9 @@ class UtilisateurController extends Controller
     /**
      * Stocker une nouvelle ressource dans le stockage.
      */
-    public function store(Request $request)
+    public function store(UtilisateurRequest $request)
     {
-        $validated = $request->validate([
-            'nom_utilisateur' => 'required|string|unique:utilisateurs,nom_utilisateur',
-            'mot_de_passe' => 'required|string|min:8',
-            'nom' => 'required|string',
-            'prenom' => 'required|string',
-            'email' => 'required|email|unique:utilisateurs,email',
-            'role' => 'required|in:administrateur',
-        ]);
+        $validated = $request->validated();
 
         // Hacher le mot de passe
         $validated['mot_de_passe'] = Hash::make($validated['mot_de_passe']);
@@ -103,18 +100,11 @@ class UtilisateurController extends Controller
     /**
      * Mettre à jour la ressource spécifiée dans le stockage.
      */
-    public function update(Request $request, string $id)
+    public function update(UtilisateurRequest $request, string $id)
     {
         $utilisateur = Utilisateur::findOrFail($id);
 
-        $validated = $request->validate([
-            'nom_utilisateur' => 'sometimes|required|string|unique:utilisateurs,nom_utilisateur,' . $id,
-            'mot_de_passe' => 'nullable|string|min:8',
-            'nom' => 'sometimes|required|string',
-            'prenom' => 'sometimes|required|string',
-            'email' => 'sometimes|required|email|unique:utilisateurs,email,' . $id,
-            'role' => 'sometimes|required|in:administrateur',
-        ]);
+        $validated = $request->validated();
 
         // Hacher le mot de passe si fourni
         if (isset($validated['mot_de_passe'])) {
@@ -186,5 +176,40 @@ class UtilisateurController extends Controller
     public function profile(Request $request)
     {
         return response()->json($request->user());
+    }
+
+    /**
+     * Révoquer tous les tokens d'un utilisateur (déconnexion de tous les appareils).
+     */
+    public function revokeAllTokens(string $id)
+    {
+        $utilisateur = Utilisateur::findOrFail($id);
+
+        // Supprimer tous les tokens de l'utilisateur
+        $utilisateur->tokens()->delete();
+
+        return response()->json([
+            'message' => 'Tous les tokens de l\'utilisateur ont été révoqués'
+        ]);
+    }
+
+    /**
+     * Réinitialiser le mot de passe d'un utilisateur.
+     */
+    public function resetPassword(string $id)
+    {
+        $utilisateur = Utilisateur::findOrFail($id);
+
+        // Générer un mot de passe aléatoire
+        $newPassword = Str::random(10);
+
+        $utilisateur->update([
+            'mot_de_passe' => Hash::make($newPassword)
+        ]);
+
+        return response()->json([
+            'message' => 'Mot de passe réinitialisé avec succès',
+            'nouveau_mot_de_passe' => $newPassword
+        ]);
     }
 }

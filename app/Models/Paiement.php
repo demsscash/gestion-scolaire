@@ -17,6 +17,7 @@ class Paiement extends Model
      */
     protected $fillable = [
         'inscription_id',
+        'facture_id',
         'montant',
         'date_paiement',
         'mode_paiement',
@@ -41,6 +42,14 @@ class Paiement extends Model
     public function inscription(): BelongsTo
     {
         return $this->belongsTo(Inscription::class);
+    }
+
+    /**
+     * Obtenir la facture associée à ce paiement.
+     */
+    public function facture(): BelongsTo
+    {
+        return $this->belongsTo(Facture::class);
     }
 
     /**

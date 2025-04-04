@@ -12,6 +12,13 @@ class Session extends Model
     use HasFactory;
 
     /**
+     * La table associée au modèle.
+     *
+     * @var string
+     */
+    protected $table = 'academic_periods';
+
+    /**
      * Les attributs qui sont mass assignable.
      *
      * @var array<int, string>
